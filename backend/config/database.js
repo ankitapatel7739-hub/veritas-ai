@@ -23,10 +23,16 @@ export const testConnection = async () => {
         console.log("MySQL Database Connected Successfully!");
 
         connection.release();
+
         return true;
 
     } catch (error) {
-        console.error("MySQL Connection Failed:", error.message);
+
+        console.error(
+            "MySQL Connection Failed:",
+            error.message
+        );
+
         return false;
     }
 };

@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import pool from "../config/database.js";
 
 const router = express.Router();
 
@@ -55,24 +56,69 @@ router.get("/status", (req, res) => {
 // DOCUMENT UPLOAD ROUTE
 // ==============================
 
-router.post("/upload", upload.single("document"), (req, res) => {
+router.post("/upload", upload.single("document"), async (req, res) => {
 
-    if (!req.file) {
-        return res.status(400).json({
+    try {
+
+        // Check if file exists
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No document uploaded"
+            });
+        }
+
+        // Insert file information into MySQL
+        const sql = `
+            INSERT INTO documents
+            (
+                original_filename,
+                stored_filename,
+                file_path,
+                file_type,
+                file_size,
+                processing_status
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        const values = [
+            req.file.originalname,
+            req.file.filename,
+            req.file.path,
+            req.file.mimetype,
+            req.file.size,
+            "uploaded"
+        ];
+
+        const [result] = await pool.execute(sql, values);
+
+        // Send response
+        res.status(200).json({
+            success: true,
+            message: "Document uploaded and saved to database successfully!",
+            documentId: result.insertId,
+
+            file: {
+                originalName: req.file.originalname,
+                filename: req.file.filename,
+                path: req.file.path,
+                size: req.file.size,
+                type: req.file.mimetype
+            }
+        });
+
+    } catch (error) {
+
+        console.error("Upload Error:", error);
+
+        res.status(500).json({
             success: false,
-            message: "No document uploaded"
+            message: "Error uploading document",
+            error: error.message
         });
     }
 
-    res.status(200).json({
-        success: true,
-        message: "Document uploaded successfully!",
-        file: {
-            originalName: req.file.originalname,
-            filename: req.file.filename,
-            size: req.file.size
-        }
-    });
 });
 
 export default router;
