@@ -1,5 +1,8 @@
 
+
 import { sampleDocuments } from "./sampleData.js";
+
+import { analyzeContext } from "./contextualAnalyzer.js";
 
 import { analyzeDocuments } from "./documentAnalyzer.js";
 
@@ -45,5 +48,49 @@ console.log("ANOMALY TEST");
 
 console.dir(
     detectAnomalies(suspiciousTestDocuments),
+    { depth: null }
+);
+// CONTEXTUAL ANALYSIS TEST
+
+const contextualTestDocuments = [
+
+    {
+        documentId: "CTX001",
+        documentType: "salary_slip",
+
+        fields: {
+            salary: {
+                value: 45000,
+                confidence: 0.98,
+                page: 1,
+                sourceText: "Net Salary: 45000"
+            },
+
+            salaryPeriod: "2026-10"
+        }
+    },
+
+    {
+        documentId: "CTX002",
+        documentType: "bank_statement",
+
+        fields: {
+            monthlySalaryCredit: {
+                value: 40000,
+                confidence: 0.97,
+                page: 2,
+                sourceText: "Salary Credit: 40000"
+            },
+
+            creditPeriod: "2026-10"
+        }
+    }
+
+];
+
+console.log("CONTEXTUAL ANALYSIS");
+
+console.dir(
+    analyzeContext(contextualTestDocuments),
     { depth: null }
 );
